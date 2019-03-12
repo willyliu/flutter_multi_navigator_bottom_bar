@@ -35,6 +35,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
   );
 
+  final controller = MultiNavigatorBottomBarController();
+
   @override
   Widget build(BuildContext context) => MultiNavigatorBottomBar(
         type: BottomNavigationBarType.fixed,
@@ -42,27 +44,58 @@ class _MyHomePageState extends State<MyHomePage> {
         pageWidgetDecorator: pageDecorator,
         tabs: tabs,
         shouldHandlePop: () => !isPopLocking,
+        controller: controller,
       );
+
+  var value = 1.0;
 
   Widget pageDecorator(pageWidget) => Column(
         children: <Widget>[
           Expanded(child: pageWidget),
           Container(
             alignment: AlignmentDirectional.center,
-            height: 48.0,
+            height: 120.0,
             color: Colors.black,
-            child: Row(
+            child: Column(
               children: <Widget>[
-                Expanded(
-                  child: Text(
-                    "[PageWidgetDecorator] isPopLocking? $isPopLocking",
-                    style: TextStyle(color: Colors.white),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Slider(
+                    activeColor: Colors.white,
+                    inactiveColor: Colors.grey,
+                    min: 0.0,
+                    max: 1.0,
+                    value: value,
+                    onChanged: (value) {
+                      setState(() {
+                        this.value = value;
+                      });
+                      double height = (kBottomNavigationBarHeight +
+                              MediaQuery.of(context).padding.bottom) *
+                          value;
+                      controller.setBarHeight(height);
+                      print(value);
+                    },
                   ),
                 ),
-                MaterialButton(
-                  child: Text(isPopLocking ? "Unlock" : "Lock"),
-                  onPressed: () => setState(() => isPopLocking = !isPopLocking),
-                )
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          "[PageWidgetDecorator] isPopLocking? $isPopLocking",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      MaterialButton(
+                        child: Text(isPopLocking ? "Unlock" : "Lock"),
+                        onPressed: () =>
+                            setState(() => isPopLocking = !isPopLocking),
+                      )
+                    ],
+                  ),
+                ),
               ],
             ),
           )
