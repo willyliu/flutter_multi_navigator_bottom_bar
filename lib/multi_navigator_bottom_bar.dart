@@ -3,6 +3,7 @@ library multi_navigator_bottom_bar;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+/// Represents a tab in [MultiNavigatorBottomBar].
 class BottomBarTab {
   final WidgetBuilder routePageBuilder;
   final WidgetBuilder initPageBuilder;
@@ -29,6 +30,7 @@ class MultiNavigatorBottomBar extends StatefulWidget {
   final Color fixedColor;
   final double iconSize;
   final ValueGetter shouldHandlePop;
+  final double barHeight;
 
   MultiNavigatorBottomBar({
     @required this.initTabIndex,
@@ -40,6 +42,7 @@ class MultiNavigatorBottomBar extends StatefulWidget {
     this.fixedColor,
     this.iconSize = 24.0,
     this.shouldHandlePop = _defaultShouldHandlePop,
+    this.barHeight,
   });
 
   static bool _defaultShouldHandlePop() => true;
@@ -57,9 +60,10 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   @override
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
-          return widget.shouldHandlePop() ? !await widget
-              .tabs[currentIndex]._navigatorKey.currentState
-              .maybePop() : false;
+          return widget.shouldHandlePop()
+              ? !await widget.tabs[currentIndex]._navigatorKey.currentState
+                  .maybePop()
+              : false;
         },
         child: Scaffold(
           body: widget.pageWidgetDecorator == null
@@ -83,28 +87,46 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
         ),
       );
 
-  Widget _buildBottomBar() => BottomNavigationBar(
-        type: widget.type,
-        fixedColor: widget.fixedColor,
-        items: widget.tabs
-            .map((tab) => BottomNavigationBarItem(
-                  icon: tab.tabIconBuilder(context),
-                  title: tab.tabTitleBuilder(context),
-                ))
-            .toList(),
-        onTap: (index) {
-          if (widget.onTap != null) widget.onTap(index);
-          setState(() => currentIndex = index);
-        },
-        currentIndex: currentIndex,
-      );
+  Widget _buildBottomBar() {
+    final bar = BottomNavigationBar(
+      type: widget.type,
+      fixedColor: widget.fixedColor,
+      items: widget.tabs
+          .map((tab) => BottomNavigationBarItem(
+                icon: tab.tabIconBuilder(context),
+                title: tab.tabTitleBuilder(context),
+              ))
+          .toList(),
+      onTap: (index) {
+        if (widget.onTap != null) widget.onTap(index);
+        setState(() => currentIndex = index);
+      },
+      currentIndex: currentIndex,
+    );
+
+    if (widget.barHeight != null) {
+      return SizedOverflowBox(
+          size: Size.fromHeight(widget.barHeight),
+          child: ClipRect(
+              clipBehavior: Clip.antiAlias,
+              child: Align(
+                child: bar,
+                alignment: Alignment.topCenter,
+                heightFactor: widget.barHeight /
+                    (kBottomNavigationBarHeight +
+                        MediaQuery.of(context).padding.bottom),
+              )));
+    }
+    return bar;
+  }
 }
 
 class TabPageNavigator extends StatelessWidget {
-  TabPageNavigator(
-      {@required this.navigatorKey,
-      @required this.initPageBuilder,
-      this.pageRoute});
+  TabPageNavigator({
+    @required this.navigatorKey,
+    @required this.initPageBuilder,
+    this.pageRoute,
+  });
 
   final GlobalKey<NavigatorState> navigatorKey;
   final WidgetBuilder initPageBuilder;
