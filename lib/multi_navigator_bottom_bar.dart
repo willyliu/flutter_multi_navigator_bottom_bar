@@ -33,9 +33,11 @@ class BottomBarTab {
 class MultiNavigatorBottomBarController {
   _MultiNavigatorBottomBarState bottomBarState;
   _BottomNavigationBarWrapperState bottomBarWrapperState;
+  double lastBarHeight;
 
   void setBarHeight(double height) {
-    bottomBarWrapperState?.setBarHeight(height);
+    lastBarHeight = height;
+    bottomBarWrapperState?._update();
   }
 }
 
@@ -142,14 +144,13 @@ class _BottomNavigationBarWrapper extends StatefulWidget {
 class _BottomNavigationBarWrapperState
     extends State<_BottomNavigationBarWrapper> {
   MultiNavigatorBottomBarController controller;
-  double _barHeight;
 
   _BottomNavigationBarWrapperState({this.controller}) {
     this.controller?.bottomBarWrapperState = this;
   }
 
-  setBarHeight(double height) {
-    setState(() => _barHeight = height);
+  void _update() {
+    setState(() {});
   }
 
   @override
@@ -177,15 +178,17 @@ class _BottomNavigationBarWrapperState
       },
       currentIndex: state.currentIndex,
     );
-    if (_barHeight != null) {
+    var barHeight = this.controller?.lastBarHeight;
+
+    if (barHeight != null) {
       return SizedOverflowBox(
-          size: Size.fromHeight(_barHeight),
+          size: Size.fromHeight(barHeight),
           child: ClipRect(
               clipBehavior: Clip.antiAlias,
               child: Align(
                 child: bar,
                 alignment: Alignment.topCenter,
-                heightFactor: _barHeight /
+                heightFactor: barHeight /
                     (kBottomNavigationBarHeight +
                         MediaQuery.of(context).padding.bottom),
               )));
