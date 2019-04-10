@@ -89,7 +89,9 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   int currentIndex;
   MultiNavigatorBottomBarController controller;
 
-  _MultiNavigatorBottomBarState(this.currentIndex, {this.controller});
+  _MultiNavigatorBottomBarState(this.currentIndex, {this.controller}) {
+    this.controller.bottomBarState = this;
+  }
 
   @override
   Widget build(BuildContext context) => WillPopScope(
