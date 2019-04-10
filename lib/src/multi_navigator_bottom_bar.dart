@@ -18,6 +18,7 @@ class BottomBarTab {
   /// The key for the navigator within the tab.
   final GlobalKey<NavigatorState> _navigatorKey;
 
+  /// Creates a new instance.
   BottomBarTab({
     @required this.initPageBuilder,
     @required this.tabIconBuilder,
@@ -31,11 +32,22 @@ class BottomBarTab {
 class MultiNavigatorBottomBarController {
   _MultiNavigatorBottomBarState bottomBarState;
   _BottomNavigationBarWrapperState bottomBarWrapperState;
-  double lastBarHeight;
+  double _lastBarHeight;
 
-  void setBarHeight(double height) {
-    lastBarHeight = height;
+  double get lastBarHeight => _lastBarHeight;
+
+  /// Changes the height of the bottom bar of [MultiNavigatorBottomBar].
+  setBarHeight(double height) {
+    _lastBarHeight = height;
     bottomBarWrapperState?._update();
+  }
+
+  /// Pushes a [route] in the navigator in the current tab of
+  /// [MultiNavigatorBottomBar].
+  pushRouteAtCurrentTab(PageRoute route) {
+    bottomBarState
+        .widget.tabs[bottomBarState.currentIndex]._navigatorKey.currentState
+        .push(route);
   }
 }
 
@@ -149,7 +161,7 @@ class _BottomNavigationBarWrapperState
     this.controller?.bottomBarWrapperState = this;
   }
 
-  void _update() {
+  _update() {
     setState(() {});
   }
 
