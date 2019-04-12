@@ -63,7 +63,8 @@ class MultiNavigatorBottomBar extends StatefulWidget {
   final int initTabIndex;
   final List<BottomBarTab> tabs;
   final PageRoute pageRoute;
-  final ValueChanged<int> onTap;
+  final ValueChanged<int> willSelect;
+  final ValueChanged<int> didSelect;
   final Widget Function(Widget) pageWidgetDecorator;
   final BottomNavigationBarType type;
   final Color fixedColor;
@@ -74,7 +75,8 @@ class MultiNavigatorBottomBar extends StatefulWidget {
   MultiNavigatorBottomBar({
     @required this.initTabIndex,
     @required this.tabs,
-    this.onTap,
+    this.willSelect,
+    this.didSelect,
     this.pageRoute,
     this.pageWidgetDecorator,
     this.type,
@@ -135,7 +137,8 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   Widget _buildBottomBar() {
     return _BottomNavigationBarWrapper(
       tabs: widget.tabs,
-      willSelect: widget.onTap,
+      willSelect: widget.willSelect,
+      didSelect: widget.didSelect,
       fixedColor: widget.fixedColor,
       type: widget.type,
       controller: widget.controller,
