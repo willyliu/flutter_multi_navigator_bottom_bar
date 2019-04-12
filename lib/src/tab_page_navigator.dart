@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
 
+/// The navigator with in a tab.
 class TabPageNavigator extends StatelessWidget {
   TabPageNavigator({
+    /// The key used in the navigator.
     @required this.navigatorKey,
-    @required this.initPageBuilder,
+
+    /// The builder for the initial page.
+    @required this.initialPageBuilder,
+
+    /// The routes used in the navigator.
     this.pageRoute,
+
+    /// The observers
+    this.observers,
   });
 
   final GlobalKey<NavigatorState> navigatorKey;
-  final WidgetBuilder initPageBuilder;
+  final WidgetBuilder initialPageBuilder;
   final PageRoute pageRoute;
+  final List<NavigatorObserver> observers;
 
   @override
   Widget build(BuildContext context) => Navigator(
         key: navigatorKey,
-        observers: [HeroController()],
+        observers: this.observers ?? [HeroController()],
         onGenerateRoute: (routeSettings) =>
             pageRoute ??
             MaterialPageRoute(
@@ -25,5 +35,5 @@ class TabPageNavigator extends StatelessWidget {
       );
 
   WidgetBuilder _defaultPageRouteBuilder(String routName, {String heroTag}) =>
-      (context) => initPageBuilder(context);
+      (context) => initialPageBuilder(context);
 }

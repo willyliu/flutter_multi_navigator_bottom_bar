@@ -7,7 +7,7 @@ class BottomBarTab {
   final WidgetBuilder routePageBuilder;
 
   /// Builds the initial page.
-  final WidgetBuilder initPageBuilder;
+  final WidgetBuilder initialPageBuilder;
 
   /// Builds the icon for the tab.
   final WidgetBuilder tabIconBuilder;
@@ -18,12 +18,16 @@ class BottomBarTab {
   /// The key for the navigator within the tab.
   final GlobalKey<NavigatorState> _navigatorKey;
 
+  /// The navigator observers.
+  final List<NavigatorObserver> observers;
+
   /// Creates a new instance.
   BottomBarTab({
-    @required this.initPageBuilder,
+    @required this.initialPageBuilder,
     @required this.tabIconBuilder,
     this.tabTitleBuilder,
     this.routePageBuilder,
+    this.observers,
     GlobalKey<NavigatorState> navigatorKey,
   }) : _navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
 }
@@ -118,7 +122,8 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
         offstage: widget.tabs.indexOf(tab) != currentIndex,
         child: TabPageNavigator(
           navigatorKey: tab._navigatorKey,
-          initPageBuilder: tab.initPageBuilder,
+          initialPageBuilder: tab.initialPageBuilder,
+          observers: tab.observers,
           pageRoute: widget.pageRoute,
         ),
       );
