@@ -3,11 +3,11 @@ import 'tab_page_navigator.dart';
 
 /// Represents a tab in [MultiNavigatorBottomBar].
 class BottomBarTab {
-  /// Builds the routes for the tab.
-  final WidgetBuilder routePageBuilder;
-
   /// Builds the initial page.
   final WidgetBuilder initialPageBuilder;
+
+  /// Name of the initial page.
+  final String initialPageName;
 
   /// Builds the icon for the tab.
   final WidgetBuilder tabIconBuilder;
@@ -15,16 +15,20 @@ class BottomBarTab {
   /// Builds the title for the tab.
   final WidgetBuilder tabTitleBuilder;
 
-  /// The key for the navigator within the tab.
-  final GlobalKey<NavigatorState> _navigatorKey;
+  /// Builds the routes for the tab.
+  final WidgetBuilder routePageBuilder;
 
   /// The navigator observers.
   final List<NavigatorObserver> observers;
+
+  /// The key for the navigator within the tab.
+  final GlobalKey<NavigatorState> _navigatorKey;
 
   /// Creates a new instance.
   BottomBarTab({
     @required this.initialPageBuilder,
     @required this.tabIconBuilder,
+    this.initialPageName,
     this.tabTitleBuilder,
     this.routePageBuilder,
     this.observers,
@@ -131,7 +135,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   Widget _buildBottomBar() {
     return _BottomNavigationBarWrapper(
       tabs: widget.tabs,
-      onTap: widget.onTap,
+      willSelect: widget.onTap,
       fixedColor: widget.fixedColor,
       type: widget.type,
       controller: widget.controller,
@@ -142,7 +146,8 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
 class _BottomNavigationBarWrapper extends StatefulWidget {
   final MultiNavigatorBottomBarController controller;
   final List<BottomBarTab> tabs;
-  final ValueChanged<int> onTap;
+  final ValueChanged<int> willSelect;
+  final ValueChanged<int> didSelect;
   final BottomNavigationBarType type;
   final Color fixedColor;
 
@@ -151,7 +156,8 @@ class _BottomNavigationBarWrapper extends StatefulWidget {
     @required this.tabs,
     this.type,
     this.fixedColor,
-    this.onTap,
+    this.willSelect,
+    this.didSelect,
     this.controller,
   }) : super(key: key);
 
@@ -186,18 +192,25 @@ class _BottomNavigationBarWrapperState
               ))
           .toList(),
       onTap: (index) {
-        if (widget.onTap != null) {
-          widget.onTap(index);
+        if (widget.willSelect != null) {
+          widget.willSelect(index);
         }
         _MultiNavigatorBottomBarState state = context
             .ancestorStateOfType(TypeMatcher<_MultiNavigatorBottomBarState>());
 
         if (state.currentIndex == index) {
           if (state.widget.tapToPopToRoot) {
-            state.widget.tabs[state.currentIndex]._navigatorKey.currentState
-                .popUntil((r) => r.isFirst);
+            final currentTab = state.widget.tabs[state.currentIndex];
+            final currentState = currentTab._navigatorKey.currentState;
+            if (currentState.canPop()) {
+              currentState.popUntil((r) => r.isFirst);
+              widget.didSelect(index);
+            }
           }
           return;
+        }
+        if (widget.didSelect != null) {
+          widget.didSelect(index);
         }
 
         state.setState(() {
