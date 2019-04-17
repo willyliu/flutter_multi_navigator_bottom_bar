@@ -53,9 +53,21 @@ class MultiNavigatorBottomBarController {
   /// Pushes a [route] in the navigator in the current tab of
   /// [MultiNavigatorBottomBar].
   pushRouteAtCurrentTab(PageRoute route) {
-    bottomBarState
-        .widget.tabs[bottomBarState.currentIndex]._navigatorKey.currentState
-        .push(route);
+    final state = bottomBarState
+        .widget.tabs[bottomBarState._currentIndex]._navigatorKey.currentState;
+    state.push(route);
+  }
+
+  /// Pop the navigator to the initial route at current tab of
+  /// [MultiNavigatorBottomBar].
+  popToRootAtCurrentTab() {
+    final state = bottomBarState
+        .widget.tabs[bottomBarState._currentIndex]._navigatorKey.currentState;
+    state.popUntil((r) => r.isFirst);
+  }
+
+  selectTab(int tabIndex) {
+    bottomBarState._selectTab(tabIndex);
   }
 }
 
@@ -89,17 +101,15 @@ class MultiNavigatorBottomBar extends StatefulWidget {
   static bool _defaultShouldHandlePop() => true;
 
   @override
-  State<StatefulWidget> createState() => _MultiNavigatorBottomBarState(
-        initTabIndex,
-        controller: controller,
-      );
+  State<StatefulWidget> createState() =>
+      _MultiNavigatorBottomBarState(initTabIndex, controller: controller);
 }
 
 class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
-  int currentIndex;
+  int _currentIndex;
   MultiNavigatorBottomBarController controller;
 
-  _MultiNavigatorBottomBarState(this.currentIndex, {this.controller}) {
+  _MultiNavigatorBottomBarState(this._currentIndex, {this.controller}) {
     this.controller.bottomBarState = this;
   }
 
@@ -107,7 +117,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
           return widget.shouldHandlePop()
-              ? !await widget.tabs[currentIndex]._navigatorKey.currentState
+              ? !await widget.tabs[_currentIndex]._navigatorKey.currentState
                   .maybePop()
               : false;
         },
@@ -125,7 +135,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
       );
 
   Widget _buildOffstageNavigator(BottomBarTab tab) => Offstage(
-        offstage: widget.tabs.indexOf(tab) != currentIndex,
+        offstage: widget.tabs.indexOf(tab) != _currentIndex,
         child: TabPageNavigator(
           navigatorKey: tab._navigatorKey,
           initialPageBuilder: tab.initialPageBuilder,
@@ -143,6 +153,10 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
       type: widget.type,
       controller: widget.controller,
     );
+  }
+
+  void _selectTab(int tabIndex) {
+    setState(() => _currentIndex = tabIndex);
   }
 }
 
@@ -181,6 +195,28 @@ class _BottomNavigationBarWrapperState
     setState(() {});
   }
 
+  _selectTabWithPoppingToRoot(int index) {
+    _MultiNavigatorBottomBarState state = context
+        .ancestorStateOfType(TypeMatcher<_MultiNavigatorBottomBarState>());
+
+    if (state._currentIndex == index) {
+      if (state.widget.tapToPopToRoot) {
+        final currentTab = state.widget.tabs[state._currentIndex];
+        final currentState = currentTab._navigatorKey.currentState;
+        if (currentState.canPop()) {
+          currentState.popUntil((r) => r.isFirst);
+          widget.didSelect(index);
+        }
+      }
+      return;
+    }
+    if (widget.didSelect != null) {
+      widget.didSelect(index);
+    }
+
+    state.setState(() => state._currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     _MultiNavigatorBottomBarState state = context
@@ -194,37 +230,14 @@ class _BottomNavigationBarWrapperState
                 title: tab.tabTitleBuilder(context),
               ))
           .toList(),
-      onTap: (index) {
-        if (widget.willSelect != null) {
-          widget.willSelect(index);
-        }
-        _MultiNavigatorBottomBarState state = context
-            .ancestorStateOfType(TypeMatcher<_MultiNavigatorBottomBarState>());
-
-        if (state.currentIndex == index) {
-          if (state.widget.tapToPopToRoot) {
-            final currentTab = state.widget.tabs[state.currentIndex];
-            final currentState = currentTab._navigatorKey.currentState;
-            if (currentState.canPop()) {
-              currentState.popUntil((r) => r.isFirst);
-              widget.didSelect(index);
-            }
-          }
-          return;
-        }
-        if (widget.didSelect != null) {
-          widget.didSelect(index);
-        }
-
-        state.setState(() {
-          state.currentIndex = index;
-        });
-      },
-      currentIndex: state.currentIndex,
+      onTap: _selectTabWithPoppingToRoot,
+      currentIndex: state._currentIndex,
     );
     var barHeight = this.controller?.lastBarHeight;
 
     if (barHeight != null) {
+      var heightFactor = barHeight /
+          (kBottomNavigationBarHeight + MediaQuery.of(context).padding.bottom);
       return SizedOverflowBox(
           size: Size.fromHeight(barHeight),
           child: ClipRect(
@@ -232,9 +245,7 @@ class _BottomNavigationBarWrapperState
               child: Align(
                 child: bar,
                 alignment: Alignment.topCenter,
-                heightFactor: barHeight /
-                    (kBottomNavigationBarHeight +
-                        MediaQuery.of(context).padding.bottom),
+                heightFactor: heightFactor,
               )));
     }
     return bar;
