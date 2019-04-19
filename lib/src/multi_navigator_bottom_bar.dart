@@ -12,6 +12,9 @@ class BottomBarTab {
   /// Builds the icon for the tab.
   final WidgetBuilder tabIconBuilder;
 
+  /// Builds the active icon for the tab.
+  final WidgetBuilder tabActiveIconBuilder;
+
   /// Builds the title for the tab.
   final WidgetBuilder tabTitleBuilder;
 
@@ -28,6 +31,7 @@ class BottomBarTab {
   BottomBarTab({
     @required this.initialPageBuilder,
     @required this.tabIconBuilder,
+    this.tabActiveIconBuilder,
     this.initialPageName,
     this.tabTitleBuilder,
     this.routePageBuilder,
@@ -227,6 +231,9 @@ class _BottomNavigationBarWrapperState
       items: widget.tabs
           .map((tab) => BottomNavigationBarItem(
                 icon: tab.tabIconBuilder(context),
+                activeIcon: tab.tabActiveIconBuilder == null
+                    ? null
+                    : tab.tabActiveIconBuilder(context),
                 title: tab.tabTitleBuilder(context),
               ))
           .toList(),
