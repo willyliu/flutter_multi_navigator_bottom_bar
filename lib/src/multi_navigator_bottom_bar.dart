@@ -54,6 +54,11 @@ class MultiNavigatorBottomBarController {
     bottomBarWrapperState?._update();
   }
 
+  /// Changes the height of the bottom bar of [MultiNavigatorBottomBar].
+  setBarHeightWithoutSettingState(double height) {
+    _lastBarHeight = height;
+  }
+
   /// Pushes a [route] in the navigator in the current tab of
   /// [MultiNavigatorBottomBar].
   pushRouteAtCurrentTab(PageRoute route) {
