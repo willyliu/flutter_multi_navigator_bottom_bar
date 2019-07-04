@@ -109,7 +109,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
         offstage: widget.tabs.indexOf(tab) != _currentIndex,
         child: TabPageNavigator(
           navigatorKey: tab.navigatorKey,
-          initialPageBuilder: tab.wrappedInitialPageBuilder,
+          initialPageBuilder: tab.initialPageBuilder,
           observers: tab.observers,
           pageRoute: widget.pageRoute,
         ),
@@ -180,7 +180,9 @@ class _BottomNavigationBarWrapperState
             widget.didSelect(index);
           }
         } else {
-          currentTab.wrappedInitialPageTappedCallback();
+          if (currentTab.initialPageTappedCallback != null) {
+            currentTab.initialPageTappedCallback();
+          }
           if (widget.didSelect != null) {
             widget.didSelect(index);
           }

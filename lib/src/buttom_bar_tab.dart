@@ -7,7 +7,7 @@ class BottomBarTab {
 
   /// Called when the tab is tapped and the navigator of the tab in on
   /// the first page.
-  final Function(Widget widget) initialPageTappedCallback;
+  final VoidCallback initialPageTappedCallback;
 
   /// Name of the initial page.
   final String initialPageName;
@@ -48,19 +48,4 @@ class BottomBarTab {
     this.observers,
     GlobalKey<NavigatorState> navigatorKey,
   }) : this.navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
-
-  Widget lastInitialWidget;
-
-  WidgetBuilder get wrappedInitialPageBuilder => (context) {
-        Widget widget = this.initialPageBuilder(context);
-        lastInitialWidget = widget;
-        return widget;
-      };
-
-  VoidCallback get wrappedInitialPageTappedCallback => () {
-        if (lastInitialWidget != null &&
-            this.initialPageTappedCallback != null) {
-          this.initialPageTappedCallback(lastInitialWidget);
-        }
-      };
 }
