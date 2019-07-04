@@ -1,44 +1,6 @@
 import 'package:flutter/material.dart';
+import 'buttom_bar_tab.dart';
 import 'tab_page_navigator.dart';
-
-/// Represents a tab in [MultiNavigatorBottomBar].
-class BottomBarTab {
-  /// Builds the initial page.
-  final WidgetBuilder initialPageBuilder;
-
-  /// Name of the initial page.
-  final String initialPageName;
-
-  /// Builds the icon for the tab.
-  final WidgetBuilder tabIconBuilder;
-
-  /// Builds the active icon for the tab.
-  final WidgetBuilder tabActiveIconBuilder;
-
-  /// Builds the title for the tab.
-  final WidgetBuilder tabTitleBuilder;
-
-  /// Builds the routes for the tab.
-  final WidgetBuilder routePageBuilder;
-
-  /// The navigator observers.
-  final List<NavigatorObserver> observers;
-
-  /// The key for the navigator within the tab.
-  final GlobalKey<NavigatorState> _navigatorKey;
-
-  /// Creates a new instance.
-  BottomBarTab({
-    @required this.initialPageBuilder,
-    @required this.tabIconBuilder,
-    this.tabActiveIconBuilder,
-    this.initialPageName,
-    this.tabTitleBuilder,
-    this.routePageBuilder,
-    this.observers,
-    GlobalKey<NavigatorState> navigatorKey,
-  }) : _navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>();
-}
 
 /// The controller for [MultiNavigatorBottomBar].
 class MultiNavigatorBottomBarController {
@@ -63,16 +25,16 @@ class MultiNavigatorBottomBarController {
   /// [MultiNavigatorBottomBar].
   pushRouteAtCurrentTab(PageRoute route) {
     final state = bottomBarState
-        .widget.tabs[bottomBarState._currentIndex]._navigatorKey.currentState;
-    state.push(route);
+        ?.widget?.tabs[bottomBarState._currentIndex].navigatorKey.currentState;
+    state?.push(route);
   }
 
   /// Pop the navigator to the initial route at current tab of
   /// [MultiNavigatorBottomBar].
   popToRootAtCurrentTab() {
     final state = bottomBarState
-        .widget.tabs[bottomBarState._currentIndex]._navigatorKey.currentState;
-    state.popUntil((r) => r.isFirst);
+        ?.widget?.tabs[bottomBarState._currentIndex].navigatorKey.currentState;
+    state?.popUntil((r) => r.isFirst);
   }
 
   selectTab(int tabIndex) {
@@ -104,7 +66,7 @@ class MultiNavigatorBottomBar extends StatefulWidget {
     this.fixedColor,
     this.shouldHandlePop = _defaultShouldHandlePop,
     this.controller,
-    this.tapToPopToRoot = false,
+    this.tapToPopToRoot = true,
   });
 
   static bool _defaultShouldHandlePop() => true;
@@ -126,7 +88,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
           return widget.shouldHandlePop()
-              ? !await widget.tabs[_currentIndex]._navigatorKey.currentState
+              ? !await widget.tabs[_currentIndex].navigatorKey.currentState
                   .maybePop()
               : false;
         },
@@ -146,8 +108,8 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   Widget _buildOffstageNavigator(BottomBarTab tab) => Offstage(
         offstage: widget.tabs.indexOf(tab) != _currentIndex,
         child: TabPageNavigator(
-          navigatorKey: tab._navigatorKey,
-          initialPageBuilder: tab.initialPageBuilder,
+          navigatorKey: tab.navigatorKey,
+          initialPageBuilder: tab.wrappedInitialPageBuilder,
           observers: tab.observers,
           pageRoute: widget.pageRoute,
         ),
@@ -211,14 +173,22 @@ class _BottomNavigationBarWrapperState
     if (state._currentIndex == index) {
       if (state.widget.tapToPopToRoot) {
         final currentTab = state.widget.tabs[state._currentIndex];
-        final currentState = currentTab._navigatorKey.currentState;
+        final currentState = currentTab.navigatorKey.currentState;
         if (currentState.canPop()) {
           currentState.popUntil((r) => r.isFirst);
-          widget.didSelect(index);
+          if (widget.didSelect != null) {
+            widget.didSelect(index);
+          }
+        } else {
+          currentTab.wrappedInitialPageTappedCallback();
+          if (widget.didSelect != null) {
+            widget.didSelect(index);
+          }
         }
       }
       return;
     }
+
     if (widget.didSelect != null) {
       widget.didSelect(index);
     }
@@ -247,19 +217,19 @@ class _BottomNavigationBarWrapperState
     );
     var barHeight = this.controller?.lastBarHeight;
 
-    if (barHeight != null) {
-      var heightFactor = barHeight /
-          (kBottomNavigationBarHeight + MediaQuery.of(context).padding.bottom);
-      return SizedOverflowBox(
-          size: Size.fromHeight(barHeight),
-          child: ClipRect(
-              clipBehavior: Clip.antiAlias,
-              child: Align(
-                child: bar,
-                alignment: Alignment.topCenter,
-                heightFactor: heightFactor,
-              )));
+    if (barHeight == null) {
+      return bar;
     }
-    return bar;
+    var heightFactor = barHeight /
+        (kBottomNavigationBarHeight + MediaQuery.of(context).padding.bottom);
+    return SizedOverflowBox(
+        size: Size.fromHeight(barHeight),
+        child: ClipRect(
+            clipBehavior: Clip.antiAlias,
+            child: Align(
+              child: bar,
+              alignment: Alignment.topCenter,
+              heightFactor: heightFactor,
+            )));
   }
 }

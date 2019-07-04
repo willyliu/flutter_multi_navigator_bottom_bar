@@ -29,10 +29,10 @@ class _MyHomePageState extends State<MyHomePage> {
   var tabs = List.generate(
     tabSize,
     (index) => BottomBarTab(
-          initialPageBuilder: (_) => Page(index.toString()),
-          tabIconBuilder: (_) => Icon(Icons.add),
-          tabTitleBuilder: (_) => Text("Tab ${index.toString()}"),
-        ),
+      initialPageBuilder: (_) => Page(index.toString()),
+      tabIconBuilder: (_) => Icon(Icons.add),
+      tabTitleBuilder: (_) => Text("Tab ${index.toString()}"),
+    ),
   );
 
   final controller = MultiNavigatorBottomBarController();
@@ -74,7 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               MediaQuery.of(context).padding.bottom) *
                           value;
                       controller.setBarHeight(height);
-                      print(value);
                     },
                   ),
                 ),
