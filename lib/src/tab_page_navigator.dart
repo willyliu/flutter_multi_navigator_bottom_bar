@@ -29,13 +29,17 @@ class TabPageNavigator extends StatelessWidget {
   Widget build(BuildContext context) => Navigator(
         key: navigatorKey,
         observers: this.observers ?? [HeroController()],
+        onGenerateInitialRoutes: (navigator, initialRoute) => [
+          MaterialPageRoute(
+            settings: RouteSettings(name: initialPageName),
+            builder: (context) =>
+                _defaultPageRouteBuilder(initialRoute)(context),
+          )
+        ],
         onGenerateRoute: (routeSettings) =>
             pageRoute ??
             MaterialPageRoute(
-              settings: RouteSettings(
-                name: initialPageName,
-                isInitialRoute: true,
-              ),
+              settings: RouteSettings(name: initialPageName),
               builder: (context) =>
                   _defaultPageRouteBuilder(routeSettings.name)(context),
             ),
