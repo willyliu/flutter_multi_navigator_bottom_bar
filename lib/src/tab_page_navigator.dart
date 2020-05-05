@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// The navigator with in a tab.
-class TabPageNavigator extends StatelessWidget {
+class TabPageNavigator extends StatefulWidget {
   TabPageNavigator({
     @required this.navigatorKey,
     @required this.initialPageBuilder,
@@ -26,18 +26,28 @@ class TabPageNavigator extends StatelessWidget {
   final List<NavigatorObserver> observers;
 
   @override
-  Widget build(BuildContext context) => Navigator(
-        key: navigatorKey,
-        observers: this.observers ?? [HeroController()],
-        onGenerateRoute: (routeSettings) =>
-            pageRoute ??
-            MaterialPageRoute(
-              settings: RouteSettings(name: initialPageName),
-              builder: (context) =>
-                  _defaultPageRouteBuilder(routeSettings.name)(context),
-            ),
-      );
+  _TabPageNavigatorState createState() => _TabPageNavigatorState();
+}
+
+class _TabPageNavigatorState extends State<TabPageNavigator> {
+  Navigator _navigator;
+
+  @override
+  Widget build(BuildContext context) {
+    _navigator ??= Navigator(
+      key: widget.navigatorKey,
+      observers: this.widget.observers ?? [HeroController()],
+      onGenerateRoute: (routeSettings) =>
+          widget.pageRoute ??
+          MaterialPageRoute(
+            settings: RouteSettings(name: widget.initialPageName),
+            builder: (context) =>
+                _defaultPageRouteBuilder(routeSettings.name)(context),
+          ),
+    );
+    return _navigator;
+  }
 
   WidgetBuilder _defaultPageRouteBuilder(String routName, {String heroTag}) =>
-      (context) => initialPageBuilder(context);
+      (context) => widget.initialPageBuilder(context);
 }
