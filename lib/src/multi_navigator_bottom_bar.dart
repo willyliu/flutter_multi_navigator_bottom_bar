@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import 'buttom_bar_tab.dart';
-import 'tab_page_navigator.dart';
 
 /// The controller for [MultiNavigatorBottomBar].
 class MultiNavigatorBottomBarController {
@@ -37,9 +37,7 @@ class MultiNavigatorBottomBarController {
     state?.popUntil((r) => r.isFirst);
   }
 
-  selectTab(int tabIndex) {
-    bottomBarState._selectTab(tabIndex);
-  }
+  selectTab(int tabIndex) => bottomBarState._selectTab(tabIndex);
 }
 
 class MultiNavigatorBottomBar extends StatefulWidget {
@@ -105,13 +103,22 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
             widget.tabs.map((tab) => _buildOffstageNavigator(tab)).toList(),
       );
 
+  WidgetBuilder _defaultPageRouteBuilder(BottomBarTab tab, String routeName,
+          {String heroTag}) =>
+      (context) => tab.initialPageBuilder(context);
+
   Widget _buildOffstageNavigator(BottomBarTab tab) => Offstage(
         offstage: widget.tabs.indexOf(tab) != _currentIndex,
-        child: TabPageNavigator(
-          navigatorKey: tab.navigatorKey,
-          initialPageBuilder: tab.initialPageBuilder,
-          observers: tab.observers,
-          pageRoute: widget.pageRoute,
+        child: Navigator(
+          key: tab.navigatorKey,
+          observers: tab.observers ?? [HeroController()],
+          onGenerateRoute: (routeSettings) =>
+              widget.pageRoute ??
+              MaterialPageRoute(
+                settings: RouteSettings(name: tab.initialPageName),
+                builder: (context) =>
+                    _defaultPageRouteBuilder(tab, routeSettings.name)(context),
+              ),
         ),
       );
 
@@ -162,9 +169,7 @@ class _BottomNavigationBarWrapperState
     this.controller?.bottomBarWrapperState = this;
   }
 
-  _update() {
-    setState(() {});
-  }
+  _update() => setState(() {});
 
   _selectTabWithPoppingToRoot(int index) {
     _MultiNavigatorBottomBarState state = context
