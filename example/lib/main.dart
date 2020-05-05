@@ -26,26 +26,30 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool isPopLocking = false;
   static final tabSize = 4;
-  var tabs = List.generate(
-    tabSize,
-    (index) => BottomBarTab(
-      initialPageBuilder: (_) => Page(index.toString()),
-      tabIconBuilder: (_) => Icon(Icons.add),
-      tabTitleBuilder: (_) => Text("Tab ${index.toString()}"),
-    ),
-  );
+  var keys = List.generate(tabSize, (index) => GlobalKey<NavigatorState>());
 
   final controller = MultiNavigatorBottomBarController();
 
   @override
-  Widget build(BuildContext context) => MultiNavigatorBottomBar(
-        type: BottomNavigationBarType.fixed,
-        initTabIndex: 0,
-        pageWidgetDecorator: pageDecorator,
-        tabs: tabs,
-        shouldHandlePop: () => !isPopLocking,
-        controller: controller,
-      );
+  Widget build(BuildContext context) {
+    var tabs = List.generate(
+      tabSize,
+      (index) => BottomBarTab(
+        navigatorKey: keys[index],
+        initialPageBuilder: (_) => Page(index.toString()),
+        tabIconBuilder: (_) => Icon(Icons.add),
+        tabTitleBuilder: (_) => Text("Tab ${index.toString()}"),
+      ),
+    );
+    return MultiNavigatorBottomBar(
+      type: BottomNavigationBarType.fixed,
+      initTabIndex: 0,
+      pageWidgetDecorator: pageDecorator,
+      tabs: tabs,
+      shouldHandlePop: () => !isPopLocking,
+      controller: controller,
+    );
+  }
 
   var value = 1.0;
 
@@ -54,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(child: pageWidget),
           Container(
             alignment: AlignmentDirectional.center,
-            height: 120.0,
+            height: 130.0,
             color: Colors.black,
             child: Column(
               children: <Widget>[
