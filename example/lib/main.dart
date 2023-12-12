@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+  MyHomePage({Key? key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
         navigatorKey: keys[index],
         initialPageBuilder: (_) => Page(index.toString()),
         tabIconBuilder: (_) => Icon(Icons.add),
-        tabTitleBuilder: (_) => Text("Tab ${index.toString()}"),
+        tabTitle: "Tab ${index.toString()}",
       ),
     );
     return MultiNavigatorBottomBar(
@@ -121,8 +121,7 @@ class PageState extends State<Page> {
         body: Container(
           color: Colors.grey,
           alignment: AlignmentDirectional.center,
-          child: FlatButton(
-            color: Colors.pinkAccent,
+          child: TextButton(
             onPressed: () => Navigator.push(context,
                 CupertinoPageRoute(builder: (context) => SubPage(widget.name))),
             child: Text("Page ${widget.name}"),

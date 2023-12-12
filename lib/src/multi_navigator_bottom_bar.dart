@@ -4,9 +4,9 @@ import 'buttom_bar_tab.dart';
 
 /// The controller for [MultiNavigatorBottomBar].
 class MultiNavigatorBottomBarController {
-  _MultiNavigatorBottomBarState bottomBarState;
-  _BottomNavigationBarWrapperState bottomBarWrapperState;
-  double _lastBarHeight;
+  _MultiNavigatorBottomBarState? bottomBarState;
+  _BottomNavigationBarWrapperState? bottomBarWrapperState;
+  double _lastBarHeight = 0.0;
 
   double get lastBarHeight => _lastBarHeight;
 
@@ -25,7 +25,7 @@ class MultiNavigatorBottomBarController {
   /// [MultiNavigatorBottomBar].
   pushRouteAtCurrentTab(PageRoute route) {
     final state = bottomBarState
-        ?.widget?.tabs[bottomBarState._currentIndex].navigatorKey.currentState;
+        ?.widget?.tabs[bottomBarState?._currentIndex ?? 0].navigatorKey.currentState;
     state?.push(route);
   }
 
@@ -33,29 +33,29 @@ class MultiNavigatorBottomBarController {
   /// [MultiNavigatorBottomBar].
   popToRootAtCurrentTab() {
     final state = bottomBarState
-        ?.widget?.tabs[bottomBarState._currentIndex].navigatorKey.currentState;
+        ?.widget?.tabs[bottomBarState?._currentIndex ?? 0].navigatorKey.currentState;
     state?.popUntil((r) => r.isFirst);
   }
 
-  selectTab(int tabIndex) => bottomBarState._selectTab(tabIndex);
+  selectTab(int tabIndex) => bottomBarState?._selectTab(tabIndex);
 }
 
 class MultiNavigatorBottomBar extends StatefulWidget {
   final int initTabIndex;
   final List<BottomBarTab> tabs;
-  final PageRoute pageRoute;
-  final ValueChanged<int> willSelect;
-  final ValueChanged<int> didSelect;
-  final Widget Function(Widget) pageWidgetDecorator;
-  final BottomNavigationBarType type;
-  final Color fixedColor;
+  final PageRoute? pageRoute;
+  final ValueChanged<int>? willSelect;
+  final ValueChanged<int>? didSelect;
+  final Widget Function(Widget)? pageWidgetDecorator;
+  final BottomNavigationBarType? type;
+  final Color? fixedColor;
   final ValueGetter shouldHandlePop;
-  final MultiNavigatorBottomBarController controller;
+  final MultiNavigatorBottomBarController? controller;
   final bool tapToPopToRoot;
 
   MultiNavigatorBottomBar({
-    @required this.initTabIndex,
-    @required this.tabs,
+    required this.initTabIndex,
+    required this.tabs,
     this.willSelect,
     this.didSelect,
     this.pageRoute,
@@ -76,24 +76,24 @@ class MultiNavigatorBottomBar extends StatefulWidget {
 
 class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
   int _currentIndex;
-  MultiNavigatorBottomBarController controller;
+  MultiNavigatorBottomBarController? controller;
 
   _MultiNavigatorBottomBarState(this._currentIndex, {this.controller}) {
-    this.controller.bottomBarState = this;
+    this.controller?.bottomBarState = this;
   }
 
   @override
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
           return widget.shouldHandlePop()
-              ? !await widget.tabs[_currentIndex].navigatorKey.currentState
+              ? !await widget.tabs[_currentIndex].navigatorKey.currentState!
                   .maybePop()
               : false;
         },
         child: Scaffold(
           body: widget.pageWidgetDecorator == null
               ? _buildPageBody()
-              : widget.pageWidgetDecorator(_buildPageBody()),
+              : widget.pageWidgetDecorator!(_buildPageBody()),
           bottomNavigationBar: _buildBottomBar(),
         ),
       );
@@ -104,7 +104,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
       );
 
   WidgetBuilder _defaultPageRouteBuilder(BottomBarTab tab, String routeName,
-          {String heroTag}) =>
+          {String? heroTag}) =>
       (context) => tab.initialPageBuilder(context);
 
   Widget _buildOffstageNavigator(BottomBarTab tab) => Offstage(
@@ -117,7 +117,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
               MaterialPageRoute(
                 settings: RouteSettings(name: tab.initialPageName),
                 builder: (context) =>
-                    _defaultPageRouteBuilder(tab, routeSettings.name)(context),
+                    _defaultPageRouteBuilder(tab, routeSettings.name ?? '')(context),
               ),
         ),
       );
@@ -139,16 +139,16 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
 }
 
 class _BottomNavigationBarWrapper extends StatefulWidget {
-  final MultiNavigatorBottomBarController controller;
+  final MultiNavigatorBottomBarController? controller;
   final List<BottomBarTab> tabs;
-  final ValueChanged<int> willSelect;
-  final ValueChanged<int> didSelect;
-  final BottomNavigationBarType type;
-  final Color fixedColor;
+  final ValueChanged<int>? willSelect;
+  final ValueChanged<int>? didSelect;
+  final BottomNavigationBarType? type;
+  final Color? fixedColor;
 
   _BottomNavigationBarWrapper({
-    Key key,
-    @required this.tabs,
+    Key? key,
+    required this.tabs,
     this.type,
     this.fixedColor,
     this.willSelect,
@@ -163,7 +163,7 @@ class _BottomNavigationBarWrapper extends StatefulWidget {
 
 class _BottomNavigationBarWrapperState
     extends State<_BottomNavigationBarWrapper> {
-  MultiNavigatorBottomBarController controller;
+  MultiNavigatorBottomBarController? controller;
 
   _BottomNavigationBarWrapperState({this.controller}) {
     this.controller?.bottomBarWrapperState = this;
@@ -172,24 +172,26 @@ class _BottomNavigationBarWrapperState
   _update() => setState(() {});
 
   _selectTabWithPoppingToRoot(int index) {
-    _MultiNavigatorBottomBarState state = context
-        .ancestorStateOfType(TypeMatcher<_MultiNavigatorBottomBarState>());
+    _MultiNavigatorBottomBarState? state = context
+        .findAncestorStateOfType<_MultiNavigatorBottomBarState>();
 
-    if (state._currentIndex == index) {
+    if (state != null && state._currentIndex == index) {
       if (state.widget.tapToPopToRoot) {
         final currentTab = state.widget.tabs[state._currentIndex];
         final currentState = currentTab.navigatorKey.currentState;
-        if (currentState.canPop()) {
-          currentState.popUntil((r) => r.isFirst);
-          if (widget.didSelect != null) {
-            widget.didSelect(index);
-          }
-        } else {
-          if (currentTab.initialPageTappedCallback != null) {
-            currentTab.initialPageTappedCallback();
-          }
-          if (widget.didSelect != null) {
-            widget.didSelect(index);
+        if (currentState != null) {
+          if (currentState.canPop()) {
+            currentState.popUntil((r) => r.isFirst);
+            if (widget.didSelect != null) {
+              widget.didSelect!(index);
+            }
+          } else {
+            if (currentTab.initialPageTappedCallback != null) {
+              currentTab.initialPageTappedCallback!();
+            }
+            if (widget.didSelect != null) {
+              widget.didSelect!(index);
+            }
           }
         }
       }
@@ -197,16 +199,16 @@ class _BottomNavigationBarWrapperState
     }
 
     if (widget.didSelect != null) {
-      widget.didSelect(index);
+      widget.didSelect!(index);
     }
 
-    state.setState(() => state._currentIndex = index);
+    state?.setState(() => state._currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
-    _MultiNavigatorBottomBarState state = context
-        .ancestorStateOfType(TypeMatcher<_MultiNavigatorBottomBarState>());
+    _MultiNavigatorBottomBarState? state = context
+        .findAncestorStateOfType<_MultiNavigatorBottomBarState>();
     final bar = BottomNavigationBar(
       type: widget.type,
       fixedColor: widget.fixedColor,
@@ -215,12 +217,12 @@ class _BottomNavigationBarWrapperState
                 icon: tab.tabIconBuilder(context),
                 activeIcon: tab.tabActiveIconBuilder == null
                     ? null
-                    : tab.tabActiveIconBuilder(context),
-                title: tab.tabTitleBuilder(context),
+                    : tab.tabActiveIconBuilder!(context),
+                label: tab.tabTitle,
               ))
           .toList(),
       onTap: _selectTabWithPoppingToRoot,
-      currentIndex: state._currentIndex,
+      currentIndex: state?._currentIndex ?? 0,
     );
     var barHeight = this.controller?.lastBarHeight;
 
