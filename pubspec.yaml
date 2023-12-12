@@ -1,7 +1,7 @@
 name: multi_navigator_bottom_bar
 description: Helps you to build multi-navigator bottom navigation bar more easily.
-version: 0.0.8
-homepage: https://github.com/showang/flutter_multi_navigator_bottom_bar
+version: 1.0.0
+homepage: https://github.com/willyliu/flutter_multi_navigator_bottom_bar
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

@@ -1,3 +1,8 @@
-## [0.0.1] - TODO: Add release date.
+## [1.0.0]
 
-* TODO: Describe initial release.
+* Applies null safety.
+* Upgrades to embedding plugin version 2.
+
+## [0.0.1] - Initial release.
+
+* Initial release.
