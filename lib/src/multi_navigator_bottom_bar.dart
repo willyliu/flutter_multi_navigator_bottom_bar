@@ -52,6 +52,7 @@ class MultiNavigatorBottomBar extends StatefulWidget {
   final ValueGetter shouldHandlePop;
   final MultiNavigatorBottomBarController? controller;
   final bool tapToPopToRoot;
+  final Key? scaffoldKey;
 
   MultiNavigatorBottomBar({
     required this.initTabIndex,
@@ -65,6 +66,7 @@ class MultiNavigatorBottomBar extends StatefulWidget {
     this.shouldHandlePop = _defaultShouldHandlePop,
     this.controller,
     this.tapToPopToRoot = true,
+    this.scaffoldKey,
   });
 
   static bool _defaultShouldHandlePop() => true;
@@ -91,6 +93,7 @@ class _MultiNavigatorBottomBarState extends State<MultiNavigatorBottomBar> {
               : false;
         },
         child: Scaffold(
+          key: widget.scaffoldKey,
           body: widget.pageWidgetDecorator == null
               ? _buildPageBody()
               : widget.pageWidgetDecorator!(_buildPageBody()),
